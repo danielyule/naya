@@ -17,18 +17,18 @@ Given the following JSON which will be coming through a file like object:
 ```json
 [
 {
-    id: 1,
+    "id": 1,
     "type": "message",
     "content": "Hello!"
 },
 {
-    id: 2,
+    "id": 2,
     "type": "query",
     "user_name": "tarzan",
     "password": "not_jane"
 },
 {
-    id: 3,
+    "id": 3,
     "type": "command",
     "action": "swing"
 }
@@ -49,18 +49,18 @@ That is, `stream_array` returns an iterator, which will block until the next arr
 
 ```python
 handle_message({
-    id: 1,
+    "id": 1,
     "type": "message",
     "content": "Hello!"
 })
 handle_message({
-    id: 2,
+    "id": 2,
     "type": "query",
     "user_name": "tarzan",
     "password": "not_jane"
 })
 handle_message({
-    id: 3,
+    "id": 3,
     "type": "command",
     "action": "swing"
 })
