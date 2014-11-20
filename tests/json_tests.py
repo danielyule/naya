@@ -1,7 +1,7 @@
 from io import StringIO
 import json
 import unittest
-from nach.json import tokenize, TOKEN_TYPE, parse_string, parse, stream_array
+from naya.json import tokenize, TOKEN_TYPE, parse_string, parse, stream_array
 
 
 class TestJsonTokenization(unittest.TestCase):

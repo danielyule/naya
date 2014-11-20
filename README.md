@@ -1,11 +1,11 @@
-NACH (Not Another Considered Harmful)
-=====================================
+NAYA (Not Another Yet Another)
+==============================
 A fast streaming JSON parser for Python
 ---------------------------------------
 
-NACH is designed to parse JSON quickly and efficiently in pure Python 3 with no dependencies.
+NAYA is designed to parse JSON quickly and efficiently in pure Python 3 with no dependencies.
 
-NACH is different from other JSON parsers in that it can be used to stream a JSON array, even if the entire array
+NAYA is different from other JSON parsers in that it can be used to stream a JSON array, even if the entire array
 is not yet available.
 
 ## Usage
@@ -68,7 +68,7 @@ handle_message({
 
 ### parse
 
-In addition to streaming array, NACH also supports standard parsing, like the built in library:
+In addition to streaming array, NAYA also supports standard parsing, like the built in library:
 
 ```python
 obj = parse(fp)
