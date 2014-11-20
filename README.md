@@ -79,3 +79,14 @@ This method will block until the entire object is read.  There is also the conve
 ```python
 obj = parse_string('{"key": "value"}')
 ```
+
+## Related Projects
+
+### Yajl-Py
+
+[Yajl-Py](http://pykler.github.io/yajl-py/) is a wrapper around the Yajl JSON library that can be used to generate SAX style events while parsing JSON.  It also has a pure python implementation.
+
+### UltraJSON
+
+[UltraJSON](https://github.com/esnme/ultrajson) is a super fast JSON Parser written in C with python bindings.
+

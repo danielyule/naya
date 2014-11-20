@@ -230,6 +230,8 @@ class TestJsonTokenization(unittest.TestCase):
         self.assertListEqual([i for i in arr], ["People", "Places", "Things"])
         arr = stream_array(tokenize(StringIO('["Apples", "Bananas", ["Pears", "Limes"]]')))
         self.assertListEqual([i for i in arr], ["Apples", "Bananas", ["Pears", "Limes"]])
+        arr = stream_array(tokenize(StringIO('["Apples", ["Pears", "Limes"], "Bananas"]')))
+        self.assertListEqual([i for i in arr], ["Apples", ["Pears", "Limes"], "Bananas"])
 
     def test_large_sample(self):
         with open("tests/sample.json", "r") as file:
