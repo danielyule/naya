@@ -234,9 +234,9 @@ class TestJsonTokenization(unittest.TestCase):
         self.assertListEqual([i for i in arr], ["Apples", ["Pears", "Limes"], "Bananas"])
 
     def test_large_sample(self):
-        with open("tests/sample.json", "r") as file:
-            obj = parse(file)
-        with open("tests/sample.json", "r") as file:
+        with open("tests/sample.json", "r", encoding="utf-8") as file:
             obj2 = json.load(file)
+        with open("tests/sample.json", "r", encoding="utf-8") as file:
+            obj = parse(file)
 
         self.assertDictEqual(obj, obj2)
