@@ -38,7 +38,7 @@ Given the following JSON which will be coming through a file like object:
 Even if each message will be sent one at a time on the file like object (called `fp`)
 
 ```python
-messages = stream_array(fp)
+messages = stream_array(tokenize(fp))
 for message in messages:
     handle_message(message)
 ```
