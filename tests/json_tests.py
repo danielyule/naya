@@ -12,7 +12,7 @@ class TestJsonTokenization(unittest.TestCase):
     def tokenize_single_token(self, string):
         token_list = self.tokenize_sequence(string)
         self.assertEqual(1, len(token_list))
-        ttype, token = token_list[0]
+        _, token = token_list[0]
         return token
 
     def assertNumberEquals(self, expected, actual):
@@ -232,6 +232,8 @@ class TestJsonTokenization(unittest.TestCase):
         self.assertListEqual([i for i in arr], ["Apples", "Bananas", ["Pears", "Limes"]])
         arr = stream_array(tokenize(StringIO('["Apples", ["Pears", "Limes"], "Bananas"]')))
         self.assertListEqual([i for i in arr], ["Apples", ["Pears", "Limes"], "Bananas"])
+        arr = stream_array(tokenize(StringIO('["Apples", {"key":"value"}, "Bananas"]')))
+        self.assertListEqual([i for i in arr], ["Apples", {"key": "value"}, "Bananas"])
 
     def test_large_sample(self):
         with open("tests/sample.json", "r", encoding="utf-8") as file:

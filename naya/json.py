@@ -336,13 +336,15 @@ def parse_string(string):
 
 def parse(file):
     token_stream = tokenize(file)
-    val = __parse(token_stream, next(token_stream))
+    val, token_type, token = __parse(token_stream, next(token_stream))
+    if token is not None:
+        raise ValueError("Improperly closed JSON object")
     try:
         next(token_stream)
     except StopIteration:
         return val
-
-    raise ValueError("Improperly closed JSON object")
+    raise ValueError("Additional string after end of JSON")
+    
 
 
 def __parse(token_stream, first_token):
@@ -377,7 +379,6 @@ def __parse(token_stream, first_token):
         raise ValueError("Too many opening braces") from e
     try:
         while True:
-            # print(",".join([str(obj) for obj in stack]))
             if isinstance(stack[-1], list):
                 if last_type == TOKEN_TYPE.OPERATOR:
                     if last_token == "[":
@@ -404,7 +405,7 @@ def __parse(token_stream, first_token):
                     elif last_token == "]":
                         value = stack.pop()
                         if len(stack) == 0:
-                            return value
+                            return value, token_type, token
                         if isinstance(stack[-1], list):
                             stack[-1].append(value)
                         elif isinstance(stack[-1], dict):
@@ -414,7 +415,7 @@ def __parse(token_stream, first_token):
                             stack[-1].set = True
                             value = stack.pop()
                             if len(stack) == 0:
-                                return value
+                                return value, token_type, token
                             if isinstance(stack[-1], list):
                                 stack[-1].append(value)
                             elif isinstance(stack[-1], dict):
@@ -461,7 +462,7 @@ def __parse(token_stream, first_token):
                     elif last_token == "}":
                         value = stack.pop()
                         if len(stack) == 0:
-                            return value
+                            return value, token_type, token
                         if isinstance(stack[-1], list):
                             stack[-1].append(value)
                         elif isinstance(stack[-1], dict):
@@ -471,7 +472,7 @@ def __parse(token_stream, first_token):
                             stack[-1].set = True
                             value = stack.pop()
                             if len(stack) == 0:
-                                return value
+                                return value, token_type, token
                             if isinstance(stack[-1], list):
                                 stack[-1].append(value)
                             elif isinstance(stack[-1], dict):
@@ -491,7 +492,7 @@ def __parse(token_stream, first_token):
                                              + token + "'")
                         value = stack.pop()
                         if len(stack) == 0:
-                            return value
+                            return value, token_type, token
                         if isinstance(stack[-1], list):
                             stack[-1].append(value)
                         elif isinstance(stack[-1], dict):
@@ -500,7 +501,7 @@ def __parse(token_stream, first_token):
                             raise ValueError("Object key value pairs must be followed by a comma or closing bracket.  "
                                              "Got '{}'".format(value))
                         if token == "}" and len(stack) == 1:
-                            return stack[0]
+                            return stack[0], None, None
                     else:
                         raise ValueError("Object key value pairs should be followed by ',' or '}'.  Got '"
                                          + token + "'")
@@ -535,32 +536,41 @@ def __parse(token_stream, first_token):
             token_type, token = next(token_stream)
     except StopIteration as e:
         if len(stack) == 1:
-            return stack[0]
+            return stack[0], None, None
         else:
             raise ValueError("JSON Object not properly closed") from e
 
 
 def stream_array(token_stream):
-    token_type, token = next(token_stream)
 
-    if token_type != TOKEN_TYPE.OPERATOR or token != '[':
-        raise ValueError("Array must start with '['.  Got '{}'".format(token))
-
-    while True:
-        token_type, token = next(token_stream)
+    def process_token(token_type, token):
         if token_type == TOKEN_TYPE.OPERATOR:
             if token == ']':
-                return
+                return None, None, None
             elif token == ",":
                 token_type, token = next(token_stream)
                 if token_type == TOKEN_TYPE.OPERATOR:
                     if token == "[" or token == "{":
-                        yield __parse(token_stream, (token_type, token))
+                        return __parse(token_stream, (token_type, token))
                     else:
                         raise ValueError("Expected an array value.  Got '{}'".format(token))
                 else:
-                    yield token
+                    return token, None, None
             else:
                 raise ValueError("Array entries must be followed by ',' or ']'.  Got '{}'".format(token))
         else:
-            yield token
+            return token, None, None
+
+    token_type, token = next(token_stream)
+    if token_type != TOKEN_TYPE.OPERATOR or token != '[':
+        raise ValueError("Array must start with '['.  Got '{}'".format(token))
+
+    token_type, token = next(token_stream)
+    while True:
+        while token is not None:
+            value, token_type, token  = process_token(token_type, token)
+            if value is None:
+                return
+            yield value
+        token_type, token = next(token_stream)
+
