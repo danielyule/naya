@@ -235,6 +235,18 @@ class TestJsonTokenization(unittest.TestCase):
         arr = stream_array(tokenize(StringIO('["Apples", {"key":"value"}, "Bananas"]')))
         self.assertListEqual([i for i in arr], ["Apples", {"key": "value"}, "Bananas"])
 
+    def test_array_stream_of_objects_and_arrays(self):
+        arr = stream_array(tokenize(StringIO('[{"key1": "value1"}, "Places", "Things"]')))
+        self.assertListEqual([i for i in arr], [{"key1": "value1"}, "Places", "Things"])
+        arr = stream_array(tokenize(StringIO('[{"key1": "value1"}, "Places", [0, 1, 2]]')))
+        self.assertListEqual([i for i in arr], [{"key1": "value1"}, "Places", [0, 1, 2]])
+        arr = stream_array(tokenize(StringIO('[[{"key1": "value1"}, "Places", [0, 1, 2]]]')))
+        self.assertListEqual([i for i in arr], [[{"key1": "value1"}, "Places", [0, 1, 2]]])
+        arr = stream_array(tokenize(StringIO('[[{"key1": "value1", "key2": 5}]]')))
+        self.assertListEqual([i for i in arr], [[{"key1": "value1", "key2": 5}]])
+        arr = stream_array(tokenize(StringIO('[[{"key1": "value1", "key2": 5}, {"key3": "value3", "key4": null}], {"key5": false, "key6": "5"}]')))
+        self.assertListEqual([i for i in arr], [[{"key1": "value1", "key2": 5}, {"key3": "value3", "key4":None}], {"key5": False, "key6": "5"}])
+
     def test_large_sample(self):
         with open("tests/sample.json", "r", encoding="utf-8") as file:
             obj2 = json.load(file)

@@ -556,6 +556,8 @@ def stream_array(token_stream):
                         raise ValueError("Expected an array value.  Got '{}'".format(token))
                 else:
                     return token, None, None
+            elif token == "[" or token == "{":
+                return __parse(token_stream, (token_type, token))
             else:
                 raise ValueError("Array entries must be followed by ',' or ']'.  Got '{}'".format(token))
         else:
