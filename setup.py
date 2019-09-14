@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='naya',
-    version='1.0.0',
+    version='1.1.0',
     description='A fast streaming JSON parser written in pure python',
     url='https://github.com/danielyule/naya',
     author='Daniel Yule',
@@ -17,6 +17,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Software Development :: Libraries',
         'Topic :: Text Processing :: Markup'
     ],
