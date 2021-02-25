@@ -1,11 +1,15 @@
 import json
 from io import StringIO
 from . json import *
+from typing import IO, Callable, Iterator
 
+
+PrepareFunction = Callable[[IO, StringIO], None]
+TupleIter = Iterator[Tuple[dict, Optional[dict]]
 
 
 class JsonDataSource:
-    def __init__(self, fp, chunk_size=1024, fn_prepare=None):
+    def __init__(self, fp: IO, chunk_size: int = 1024):
         self.fp = fp
         self.chunk_size = chunk_size
 
@@ -15,19 +19,13 @@ class JsonDataSource:
         # Buffer to use to store entire set of JSON
         self.data_buffer = StringIO()
 
-        # Temporary buffer to use while finding start of data array in prepare()
-        if fn_prepare:
-            fn_prepare(self, StringIO())
-        else:
-            self.prepare(self, StringIO())
-
-    def prepare(self, _, skip_buffer):
+    def prepare(self, fp: IO, skip_buffer: StringIO) -> None:
         """
         Customize as needed for your unique dataset.
         Provided as a convenience for custom data sources to implement.
         """
 
-    def read(self, num_bytes):
+    def read(self, num_bytes: int) -> str:
         """
         This method ensures that Naya is fed only a single char each read.
         """
@@ -46,31 +44,35 @@ class JsonDataSource:
         except StopIteration:
             return ''
 
-    def finish(self):
-        try:
-            data = self.read(self.chunk_size)
-            while data:
-                data = self.read(self.chunk_size)
-            self.data_buffer.seek(0)
-        except Exception as e:
-            "Allow multiple finishes?"
+    def finish(self) -> None:
+        data = self.read(self.chunk_size)
 
-    def json(self):
-        self.finish()
+        while data:
+            data = self.read(self.chunk_size)
+
         self.data_buffer.seek(0)
-        try:
-            return json.load(self.data_buffer)
-        except:
-            return {}
+
+    def json(self) -> dict:
+        if self.data_buffer.tell():
+            self.finish()
+
+        return json.load(self.data_buffer)
     
     def __iter__(self):
+        self.prepare(self, StringIO())
+
         for item in stream_array(tokenize(self)):
             yield item
+
         self.finish()
 
 
-def parse_lossless(fp, fn_find_start=None):
-    data = JsonDataSource(fp, fn_prepare=fn_find_start)
+def parse_lossless(fp: IO, fn_find_start: PrepareFunction = None) -> TupleIter:
+    data = JsonDataSource(fp)
+
+    if fn_find_start:
+        data.prepare = fn_find_start
+
     data_iter = iter(data)
 
     try:
