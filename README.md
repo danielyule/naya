@@ -88,7 +88,7 @@ pointer to Naya. However, this by default loses data. Additionally, any data
 after the array will not be read by Naya. The following JSON illustrates what
 this entails:
 
-```json
+```jsonc
 // This data cannot be read by Naya because it doesn't start with an array
 {
     "key1": "value1",
