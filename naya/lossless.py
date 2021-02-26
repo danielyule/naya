@@ -1,17 +1,18 @@
 import json
 from io import StringIO
 from . json import *
-from typing import IO, Callable, Iterator
+from typing import IO, Callable, Iterator, Tuple, Optional
 
 
 PrepareFunction = Callable[[IO, StringIO], None]
-TupleIter = Iterator[Tuple[dict, Optional[dict]]
+TupleIter = Iterator[Tuple[dict, Optional[dict]]]
 
 
 class JsonDataSource:
-    def __init__(self, fp: IO, chunk_size: int = 1024):
+    def __init__(self, fp: IO, chunk_size: int = 1024, lossless=True):
         self.fp = fp
         self.chunk_size = chunk_size
+        self.lossless = lossless
 
         # Buffer for reading 1 char at a time for Naya
         self.bit_buffer = []
@@ -45,6 +46,9 @@ class JsonDataSource:
             return ''
 
     def finish(self) -> None:
+        if not self.lossless:
+            return
+
         data = self.read(self.chunk_size)
 
         while data:
@@ -53,6 +57,9 @@ class JsonDataSource:
         self.data_buffer.seek(0)
 
     def json(self) -> dict:
+        if not self.lossless:
+            return
+
         if self.data_buffer.tell():
             self.finish()
 
@@ -67,8 +74,12 @@ class JsonDataSource:
         self.finish()
 
 
-def parse_lossless(fp: IO, fn_find_start: PrepareFunction = None) -> TupleIter:
-    data = JsonDataSource(fp)
+def find_start_and_parse(
+    fp: IO,
+    fn_find_start: PrepareFunction = None,
+    lossless: bool = True
+) -> TupleIter:
+    data = JsonDataSource(fp, lossless=lossless)
 
     if fn_find_start:
         data.prepare = fn_find_start
@@ -86,64 +97,3 @@ def parse_lossless(fp: IO, fn_find_start: PrepareFunction = None) -> TupleIter:
 
     # Pair full JSON with last item for reference outside of for loop
     yield prev, data.json()
-
-
-
-
-
-
-
-
-data = {
-    'name': 'abcdefghijklmnopqrstuvwxyz1234567890',
-    'type': 'foo',
-    'dataset': [
-        {
-            'a': 1,
-            'b': []
-        },
-        {
-            'a': 2,
-            'b': []
-        },
-        {
-            'a': 3,
-            'b': []
-        }
-    ]
-}
-
-data_io = StringIO()
-json.dump(data, data_io)
-data_io.seek(0)
-
-def skip_to_array(fp, skip_buffer):
-    while not skip_buffer.getvalue().endswith('"dataset":'):
-        skip_buffer.write(fp.read(1))
-
-for item, full in parse_lossless(data_io, skip_to_array):
-    print(json.dumps(item, indent=4))
-
-print(json.dumps(full, indent=4))
-
-quit()
-
-
-a = JsonDataSource(request.raw)
-for item in a:
-    print(item)
-print(a.json())
-
-class CustomData(JsonDataSource):
-    def prepare(self, skip_buffer):
-        while skip_buffer.getvalue() != '{"ignore_this": 1, "array":':
-            skip_buffer.write(self.read(1))
-
-
-def find_start(skip_buffer):
-    while skip_buffer.getvalue() != '{"ignore_this": 1, "array":':
-        skip_buffer.write(self.read(1))
-
-for item, full in parse_lossless(request.raw, find_start):
-    print(item)
-print(full)
