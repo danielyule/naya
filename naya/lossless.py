@@ -66,12 +66,27 @@ class JsonDataSource:
         return json.load(self.data_buffer)
     
     def __iter__(self):
-        self.prepare(self, StringIO())
+        try:
+            self.prepare(self, StringIO())
+        except RuntimeError as e:
+            raise Exception(
+                'End of stream searching for array start'
+                ) from e
 
-        for item in stream_array(tokenize(self)):
-            yield item
+        try:
+            for item in stream_array(tokenize(self)):
+                yield item
+        except RuntimeError as e:
+            raise Exception(
+                'End of stream in middle of array item'
+            ) from e
 
-        self.finish()
+        try:
+            self.finish()
+        except RuntimeError as e:
+            raise Exception(
+                'End of stream while collecting rest data after array'
+            ) from e
 
 
 def find_start_and_parse(

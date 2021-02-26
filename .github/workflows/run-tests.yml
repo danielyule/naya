@@ -24,6 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Test
-        run: >
-          python -m unittest tests.json_tests
-          python -m unittest tests.lossless_tests
+        run: python -m unittest tests.json_tests
+
+      - name: Test
+        run: python -m unittest tests.lossless_tests
