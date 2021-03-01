@@ -71,7 +71,7 @@ class JsonDataSource:
         except RuntimeError as e:
             raise Exception(
                 'End of stream searching for array start'
-                ) from e
+            ) from e
 
         try:
             for item in stream_array(tokenize(self)):
