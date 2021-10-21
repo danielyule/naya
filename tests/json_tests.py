@@ -254,3 +254,8 @@ class TestJsonTokenization(unittest.TestCase):
             obj = parse(file)
 
         self.assertDictEqual(obj, obj2)
+
+    def test_stream_array_empty_data(self):
+        arr = stream_array(tokenize(StringIO('')))
+        with self.assertRaises(StopIteration):
+            next(arr)

@@ -563,16 +563,17 @@ def stream_array(token_stream):
         else:
             return token, None, None
 
-    token_type, token = next(token_stream)
+    try:
+        token_type, token = next(token_stream)
+    except StopIteration:
+        return
+
     if token_type != TOKEN_TYPE.OPERATOR or token != '[':
         raise ValueError("Array must start with '['.  Got '{}'".format(token))
 
-    token_type, token = next(token_stream)
-    while True:
+    for token_type, token in token_stream:
         while token is not None:
-            value, token_type, token  = process_token(token_type, token)
+            value, token_type, token = process_token(token_type, token)
             if value is None:
                 return
             yield value
-        token_type, token = next(token_stream)
-
